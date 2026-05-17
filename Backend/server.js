@@ -1,12 +1,15 @@
 //importojme paketat 
 const express = require("express");
 const dotenv = require("dotenv").config();
+const connectDB = require('./connect/database');
 
 //krijojme nje variable per porten
 const port = process.env.PORT || 5000;
 
 //inicializojme expressin ne nje variable app
 const app = express();
+
+connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
