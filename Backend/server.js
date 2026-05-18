@@ -21,7 +21,7 @@ app.use(errorHandler);
 
 
 app.use('/api/tasks', require('./Routes/taskRoutes'));
-
+app.use('/api/users', require('./Routes/userRoutes'));
 
 
 //inicializojme pritesin e requesteve
