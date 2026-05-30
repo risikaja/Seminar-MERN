@@ -1,9 +1,19 @@
-import {useState} from 'react';
-import {FaUser} from 'react-icons/fa';
+import { useState } from 'react';
+import { FaUser } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { useLoginMutation } from '../store/apis/userApi';
+import { toast } from 'react-toastify';
+import { setUser } from '../store/slices/userSlice';
 
 const Login = () => {
-    const [formData, setFormData] = useState({ email: '', password: ''});
-    const {email, password} = formData;
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [login, { isLoading }] = useLoginMutation();
+    const user = useSelector(state => state.user);
+
+    const [formData, setFormData] = useState({ email: '', password: '' });
+    const { email, password } = formData;
 
     const onChange = (e) => {
         setFormData(prevState => ({
@@ -11,33 +21,51 @@ const Login = () => {
             [e.target.name]: e.target.value
         }))
     };
-    const onSubmit = (e) => {
-        e.preventDefault()
-    };
+    const onSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await login(formData);
+            debugger
+            if (response.error) {
+                
+                toast.error(response.error.data?.message || response.error.error || 'Login failed');
+            } else {
+                dispatch(setUser(response.data));
+                localStorage.setItem('user', JSON.stringify(response.data));
+                navigate('/');
+                toast.success(`Welcome ${response.data.name}`);
+            }
+        } catch (error) {
+        toast.error(error.message || 'Something went wrong');
+    }
+    }
 
     return (
         <>
-        <section className='heading'>
-            <h1><FaUser/>Login</h1>
-            <p>Login and start creating tasks</p>
-        </section>
+            <section className='heading'>
+                <h1><FaUser />Login</h1>
+                <p>Login and start creating tasks</p>
+            </section>
 
-        <section className='form'>
-            <form onSubmit={onSubmit}>
+            <section className='form'>
+                <form onSubmit={onSubmit}>
 
-                <div className='form-group'>
-                    <input type="email" className='form-control' id='email' name='email' value={email} placeholder='Enter your email' onChange={onChange}/>
-                </div>
+                    <div className='form-group'>
+                        <input required type="email" className='form-control' id='email' name='email' value={email} placeholder='Enter your email' onChange={onChange} />
+                    </div>
 
-                <div className='form-group'>
-                    <input type="password" className='form-control' id='password' name='password' value={password} placeholder='Enter password' onChange={onChange}/>
-                </div>
+                    <div className='form-group'>
+                        <input required type="password" className='form-control' id='password' name='password' value={password} placeholder='Enter password' onChange={onChange} />
+                    </div>
 
-                <div className='form-group'>
-                    <button type='submit' className='btn btn-block'>Submit</button>
-                </div>
-            </form>
-        </section>
+                    <div className='form-group'>
+                        <button type='submit' disabled={isLoading} className='btn btn-block'>
+                            
+                            {isLoading ? 'Please wait' : 'Login'}</button>
+                    </div>
+                </form>
+            </section>
         </>
     )
 }

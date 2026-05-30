@@ -1,9 +1,21 @@
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
+import { setUser } from '../store/slices/userSlice';
+import { useRegisterMutation } from '../store/apis/userApi';
 import {useState} from 'react';
 import {FaUser} from 'react-icons/fa';
 
 const Register = () => {
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [register, {isLoading}] = useRegisterMutation();
+
     const [formData, setFormData] = useState({name: '', email: '', password: '', password2: ''});
     const {name, email, password, password2} = formData;
+
+    
 
     const onChange = (e) => {
         setFormData(prevState => ({
@@ -11,9 +23,26 @@ const Register = () => {
             [e.target.name]: e.target.value
         }))
     };
-    const onSubmit = (e) => {
-        e.preventDefault()
+    const onSubmit = async(e) => {
+        debugger
+        e.preventDefault();
+
+        if(password !== password2){
+            toast.error('Passwords are different')
+        } else {
+            const response = await register(formData);
+            if (response.error) {
+                toast.error(response.error.data?.message || response.error.error || 'Registration failed');
+            } else {
+                dispatch(setUser(response.data));
+                localStorage.setItem('user', JSON.stringify(response.data));
+                navigate('/');
+                toast.success('Registration successfull');
+            }
+        }
     };
+
+
 
     return (
         <>
@@ -41,7 +70,9 @@ const Register = () => {
                 </div>
 
                 <div className='form-group'>
-                    <button type='submit' className='btn btn-block'>Submit</button>
+                    <button type='submit' className='btn btn-block' disabled={isLoading}>
+                        {isLoading ? 'Please wait... ' : 'Register'}    
+                    </button>
                 </div>
             </form>
         </section>
