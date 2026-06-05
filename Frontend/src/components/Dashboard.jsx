@@ -1,9 +1,23 @@
-import React from 'react'
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
+import TaskForm from './TaskForm';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const user = useSelector(state => state.user);
+  useEffect(() => {
+    if (!user) navigate("/login");
+  }, [user, navigate])
   return (
-    <div>Dashboard</div>
+    <>
+      <section className='heading'>
+        <h1>Welcome {user && user.name}</h1>
+        <p>Tasks Dashboard</p>
+      </section>
+
+      <TaskForm />
+    </>
   )
 }
-
 export default Dashboard
